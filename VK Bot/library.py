@@ -5,9 +5,9 @@ import traceback
 import random
 
 dict_error_logs = {
-	'Успешно': 'SUCCESS',
-	'Ошибка': 'ERROR',
-	'Предупреждение': 'WARNING'
+	'У': 'SUCCESS',
+	'О': 'ERROR',
+	'П': 'WARNING'
 }
 
 dict_error_vk = {
