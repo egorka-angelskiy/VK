@@ -1,0 +1,116 @@
+\l, SELECT datname FROM pg_database; - просмотр созданых DB
+\d , SELECT tablename FROM pg_tables where schemaname='public'; - просмотр в DB созданные таблицы
+
+create table if not exists table_students (
+student_id text not null unique check (student_id similar to '[\d]+'),
+full_name text not null unique check (full_name similar to '[A-Za-zА-Яа-я\s]+'),
+group_name text not null check (group_name similar to '[A-Za-zА-Яа-я0-9|\s]+')
+);
+
+create table if not exists table_calls (
+student_id text not null unique references table_students(student_id),
+first_call text not null check (first_call similar to '[А-Яа-я\s]+') default 'Не проведен',
+second_call text not null check (second_call similar to '[А-Яа-я\s]+') default 'Не проведен',
+first_link text not null check (first_link similar to '[^А-Яа-я]+') default 'None',
+second_link text not null check (second_link similar to '[^А-Яа-я]+') default 'None'
+);
+
+create table table_send (
+student_id text not null unique references table_students(student_id),
+first_call_in_table boolean not null default false,
+second_call_in_table boolean not null default false
+);
+
+create table if not exists table_data_call (
+	student_id text not null unique references table_students(student_id),
+	data text not null,
+	time text not null
+);
+
+
+drop table table_send;
+drop table table_calls;
+drop table table_students;
+
+
+select * from table_students;
+
+select * from table_calls;
+
+select * from table_send;
+
+delete from table_send;
+delete from table_calls;
+delete from table_students;
+
+
+
+
+
+select t.student_id, table_students.group_name, first_link from (
+select table_calls.student_id, first_link 
+from table_calls
+join table_send
+on table_calls.student_id=table_send.student_id
+) 
+as t
+join table_students
+on table_students.student_id=t.student_id
+;
+
+
+
+
+
+
+
+select table_calls.student_id 
+from table_calls 
+full join table_data_call 
+on table_calls.student_id=table_data_call.student_id 
+where table_data_call.student_id is null and first_link='None'
+;
+
+
+
+select c.student_id, s.group_name, c.first_link
+from table_calls as c
+join table_students as s
+on c.student_id=s.student_id
+where c.first_call='Проведен'
+;
+
+select c.student_id, s.group_name, c.second_link
+from table_calls as c
+join table_students as s
+on c.student_id=s.student_id
+where c.second_call='Проведен'
+;
+
+select se.student_id, t.group_name, t.first_link
+from table_send as se
+join (
+select c.student_id, s.group_name, c.first_link
+from table_calls as c
+join table_students as s
+on c.student_id=s.student_id
+where c.first_call='Проведен'
+) as t
+on se.student_id=t.student_id
+where se.first_call_in_table=true
+;
+
+
+select table_calls.student_id 
+from table_calls 
+full join table_data_call 
+on table_calls.student_id=table_data_call.student_id 
+where table_data_call.student_id is null and second_call='Не проведен' and first_call='Проведен'
+;
+
+
+select c.student_id
+from table_calls as c
+join table_send as s
+on c.student_id=s.student_id
+where s.second_call_in_table='true' and c.second_call='Не проведен';

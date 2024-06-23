@@ -1,0 +1,47 @@
+<title>Созвоны</title>
+
+<form method="POST" action="/today_call">
+	<select name="day">
+		<option selected>Дата</option>
+		{% for day in days %}
+		<option>{{ day }}</option>
+		{% endfor %}
+	</select>
+	<button type="submit">Выбрать</button>
+</form>
+
+<form method="POST" action="/vk_call">
+	<button type="submit">График</button>
+</form>
+
+<form action="/reminder" method="POST"> 
+	<button type="submit">Напомнить о созвоне</button>
+</form>
+
+<table>
+	<thead>
+		<tr>
+			{% for column in columns %}
+				<th>{{ column }}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in table %}
+		<tr>
+			{% for el in row %}
+				{% if 'id' in columns[loop.index - 1] %}
+					<td><a href="https://vk.com/im?sel={{ el }}">{{ el }}</a></td>
+				<!--<td>{{ el }}</td>-->
+				{% else %}
+					<td>{{ el }}</td>
+				{% endif %}
+			{% endfor %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<a href="/">На главную</a>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='table.css') }}">

@@ -1,0 +1,19 @@
+1. Зайти на сайт - https://www.python.org/downloads/release/python-3122/
+2. Листаем в самый низ и выбираем:
+--- для MacOS - macOS 64-bit universal2 installer
+--- для Windows - Windows installer (64-bit)
+--- для Linux - Windows installer (ARM64)
+
+3. Переходим в терминал и вставляем команду:
+(чтобы перейти в терминал файла, необходимо нажать ПКМ на файл и открыть текущий файл в терминале)
+--- для Windows - pip install -r .\library.txt
+--- для MacOS, Linux -  pip3 install -r library.txt
+
+4. В поисковике ПК вводим idle, открываем данную программу,
+влевом углу нажимаем File -> Open... -> выбираем папку/каталог куда сохранили.
+Теперь нажимаем Run -> Run Module 
+
+ИЛИ
+для запуска, в открытом терминате пропишите: python __init__.py
+
+5. Если возникают вопросы, проблемы -> https://t.me/egorbeckish (@egorbeckish)

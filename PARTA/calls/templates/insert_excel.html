@@ -1,0 +1,24 @@
+<title>Созвоны</title>
+
+<table>
+	<thead>
+		<tr>
+			{% for column in columns %}
+				<th>{{ column }}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in table %}
+		<tr>
+			{% for el in row %}
+				<td>{{ el }}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<a href="/">На главную</a>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='excel.css') }}">

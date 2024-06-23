@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="shortcut icon" href="{{ url_for('static', filename='icon.ico') }}">
+		<title>Auto Message v0.0.1</title>
+	</head>
+	<a href="https://t.me/egorbeckish" target="_blank" rel="noopener noreferrer" class="link_tg">
+		<img src="{{ url_for('static', filename='tg.png') }}" height="50", width="50">
+	</a>
+	<a href="https://vkhost.github.io/" target="_blank" rel="noopener noreferrer" class="link_access_token">
+		<img src="{{ url_for('static', filename='vk.svg') }}" height="50", width="50">
+	</a>
+	<form action="/send_message" method="POST">
+		<div class="token">
+			<label>TOKEN</label>
+			{% if token == None %}
+				<input name="input_token" placeholder="Сюда необходимо вставить токен..." required></input>
+			{% else %}
+				<input name="input_token" value="{{ token }}" placeholder="Сюда необходимо вставить токен..."></input>
+			{% endif %}
+			<input type="submit" value="Удалить" name="delete_token"/>
+		</div>
+		<div class="message">
+			<label>Сообщение</label>
+			<textarea name="message" placeholder="Ввод сообщения..." required></textarea>
+		</div>
+		<div class="list_id">
+			<label>Список ID пользователей</label>
+			<textarea name="list_id" placeholder="Ввод списка ID пользователей..." required></textarea>
+		</div>
+		<button type="submit">Отправить</button>
+	</form>
+<html>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">

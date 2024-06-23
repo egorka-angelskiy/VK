@@ -1,0 +1,89 @@
+<title>Созвоны</title>
+
+<form method="POST">
+	<select name="table_name">
+		<option selected>Таблицы</option>
+		{% for table in tables %}
+		<option>{{ table }}</option>
+		{% endfor %}
+	</select>
+	<button type="submit">Выбрать</button>
+</form>
+
+<form action="/update_data" method="POST"> 
+	<button type="submit">Обновить пользователей</button>
+</form>
+
+<form action="/message" method="POST"> 
+	<button type="submit">Написать по созвону</button>
+</form>
+
+<form action="/accept_excel" method="POST"> 
+	<button type="submit">Занесенно в excel</button>
+</form>
+
+<form action="/clear_call" method="POST"> 
+	<button type="submit">Очистить созвоны</button>
+</form>
+
+<table>
+	<thead>
+		<tr>
+			{% for column in columns %}
+			<th>{{ column }}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in table %}
+		<tr>
+			<form action="/update" method="POST">
+				{% for el in row %}
+					{% if el in ['Проведен', 'Не проведен'] %}
+						<td>
+							<select name="{{ columns[loop.index - 1] }}">
+								<option selected>{{ el }}</option>
+								{% if el == 'Проведен' %}
+									<option>Не проведен</option>
+								{% else %}
+									<option>Проведен</option>
+								{% endif %}
+							</select>
+						</td>
+					{% elif 'id' in columns[loop.index - 1] %}
+						<td><input name="{{ columns[loop.index - 1] }}" value="{{ el }}" readonly></td>
+					{% elif 'table' in columns[loop.index - 1] %}
+						<td>
+							<select name="{{ columns[loop.index - 1] }}">
+								<option selected>{{ el }}</option>
+								{% if el == False %}
+									<option>True</option>
+								{% else %}
+									<option>False</option>
+								{% endif %}
+							</select>
+						</td>
+					{% elif columns[loop.index - 1] not in ['full_name', 'group_name'] %}
+						<td><input name="{{ columns[loop.index - 1] }}" value="{{ el }}"></td>
+					{% else %}
+						<td>{{ el }}</td>
+					{% endif %}
+				{% endfor %}
+				{% if table_name not in ['table_students', 'table_data_call'] %}
+					<td><button type="submit">Обновить</button></td>
+				{% endif %}
+			</form>
+			{% if table_name == 'table_data_call' %}
+				<form action="/delete" method="POST">
+					<td><button type="submit" name="button" value="{{ row[0] }}">Проведен</button></td>
+				</form>
+			{% elif  table_name not in ['table_students', 'table_data_call'] %}
+			{% endif %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<a href="/">На главную</a>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='table.css') }}">
