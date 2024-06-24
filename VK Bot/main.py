@@ -12,7 +12,6 @@ vk_session.auth_token(
 )
 
 
-a = vk_session.get_chats('VIP | PARTA')
-b = vk_session.info_chats(a)
-print(b)
-vk_session.get_name(users_id=a)
+
+vk_session.test(27 + 2_000_000_000)
+

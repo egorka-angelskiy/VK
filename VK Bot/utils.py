@@ -45,12 +45,22 @@ def determ_attachment(attachments: list[dict]) -> list[str]:
 
 	list_attachment = []
 	for attachment in attachments:
-		type_ = attachment['type']
-		owner_id = attachment[type_]['owner_id']
-		_id = attachment[type_]['id']
-		attachment_ = f'{type_}{owner_id}_{_id}'
+		if 'attachment' in attachment:
+			attachment = attachment['attachment']
+			type_ = attachment['type']
+			owner_id = attachment[type_]['owner_id']
+			_id = attachment[type_]['id']
+			attachment_ = f'{type_}{owner_id}_{_id}'
 		
-		list_attachment.append(attachment_)
+			list_attachment.append(attachment_)
+	
+		else:		
+			type_ = attachment['type']
+			owner_id = attachment[type_]['owner_id']
+			_id = attachment[type_]['id']
+			attachment_ = f'{type_}{owner_id}_{_id}'
+			
+			list_attachment.append(attachment_)
 	
 	return list_attachment
 

@@ -100,8 +100,9 @@ class YourSelfVkBot():
 
 			self.vk_session = vk.API(
 				access_token=self.token,
-				v='5.131'
+				v='5.154'
 			)
+			# v='5.131'
 
 			return self.vk_session
 		
@@ -968,7 +969,7 @@ class YourSelfVkBot():
 	
 
 	# Получение ID бесед(ы) (Статус: Реализовано)
-	def get_chats(self, title_chat: str=None) -> list[int]:
+	def get_chat(self, title_chat: str=None) -> list[int]:
 		try:
 			if not self.auth_status:
 				write_logs(
@@ -977,12 +978,30 @@ class YourSelfVkBot():
 				)
 				return
 
-			if not isinstance(title_chat, str):
+			if not (isinstance(title_chat, str) or isinstance(title_chat, type(None))):
 				write_logs(
 					type_status='О',
 					text='Передан неверный формат данных.'
 				)
 				return
+
+			if isinstance(title_chat, type(None)):
+				chats: dict = self.vk_session.messages.getConversations(count=200)['items']
+				list_id: list[int] = []
+				for chat in chats:
+					type_message: str = chat['conversation']['peer']['type']
+
+					if type_message != 'chat':
+						continue
+					
+					_id: int = chat['conversation']['peer']['id'] - 2_000_000_000
+					list_id += [_id]
+				
+				write_logs(
+					type_status='У',
+					text=f'Список существующих ID бесед получены.'
+				)
+				return list_id
 			
 			chats: dict = self.vk_session.messages.getConversations(count=200)['items']
 			list_id: list[int] = []
@@ -1009,7 +1028,7 @@ class YourSelfVkBot():
 		except Exception as error:
 			write_logs(
 				type_status='О',
-				text='Неудалось получить ID бесед(ы)',
+				text=f'Неудалось получить ID бесед(ы) {title_chat}',
 				error_msg=error
 			)
 		
@@ -1017,7 +1036,7 @@ class YourSelfVkBot():
 	
 
 	# Получение информации из бесед(ы) (Статус: Реализовано)
-	def info_chats(self, list_id: list[int]=None) -> dict | list[dict]:
+	def info_chat(self, list_id: list[int]=None) -> dict | list[dict]:
 		try:
 			if not self.auth_status:
 				write_logs(
@@ -1035,6 +1054,7 @@ class YourSelfVkBot():
 			
 			if len(list_id) > 1:
 				chats: dict = self.vk_session.messages.getChat(chat_ids=list_id)
+				list_id = list_id[:]
 				for i, chat in enumerate(chats):
 					list_id[i] = {
 						'id': chat['id'],
@@ -1129,8 +1149,15 @@ class YourSelfVkBot():
 
 				dict_users = {}
 				for i, user_id in enumerate(users_id):
-					info = self.vk_session.users.get(user_id=user_id)[0]
-					dict_users[user_id] = format_name(info)
+					try:
+						info = self.vk_session.users.get(user_id=user_id)[0]
+						dict_users[user_id] = format_name(info)
+
+					except Exception as error_name:
+						write_logs(
+							type_status='П',
+							text=f'Не удалось получить данные - {user_id}. Вероятно, данный пользователь является сообществом/ботом.'
+						)
 				
 				write_logs(
 					type_status='У',
@@ -1138,31 +1165,52 @@ class YourSelfVkBot():
 				)
 				return dict_users
 
-			# Передается ID пользователей формата LIST (Статус: Реализовано)
+
+			# Передается ID пользователей формата LIST (Статус: Разработано)
 			elif isinstance(users_id, list):
+
+				# Передается внутри LIST -> DICT  (Статус: Разработано)
+				if all([isinstance(obj, dict) for obj in users_id]):
+					
+					users_id = copy.deepcopy(users_id)
+					for i, item in enumerate(users_id):
+						users_id[i]['users'] = self.get_name(users_id=item['users'])
+
+					return users_id
+
+
 				dict_users = {}
 				for i, user_id in enumerate(users_id):
-					info = self.vk_session.users.get(user_id=user_id)[0]
-					dict_users[user_id] = format_name(info)
-				
+					try:
+						info = self.vk_session.users.get(user_id=user_id)[0]
+						dict_users[user_id] = format_name(info)
+
+					except Exception as error_name:
+						write_logs(
+							type_status='П',
+							text=f'Не удалось получить данные - {user_id}. Вероятно, данный пользователь является сообществом/ботом.'
+						)
+
 				write_logs(
 					type_status='У',
 					text=f'Полные имена пользователей получены.'
 				)
 				return dict_users
 
-			elif isinstance(users_id, list[dict]):
-				print(1)
-			
 
 
 		except Exception as error:
 			write_logs(
 				type_status='О',
-				text='Неудалось получить имя(ена).',
+				text='Не удалось получить имя(ена).',
 				error_msg=error
 			)
 
 		return
 	
+
+	def test(self, a):
+		print(self.vk_session.messages.getConversationMembers(peer_id=a, count=200)['profiles'][0])
+		return
+
 
