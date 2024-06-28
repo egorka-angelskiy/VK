@@ -1059,7 +1059,7 @@ class YourSelfVkBot():
 					list_id[i] = {
 						'id': chat['id'],
 						'title': chat['title'],
-						'users': chat['users']
+						'users': self.get_name(users_id=chat['users'])
 					}
 				
 				write_logs(
@@ -1209,8 +1209,26 @@ class YourSelfVkBot():
 		return
 	
 
-	def test(self, a):
-		print(self.vk_session.messages.getConversationMembers(peer_id=a, count=200)['profiles'][0])
-		return
+	def test(
+			self, 
+			chat_id: int | str=None, 
+			chats_id:list[int | str]=None,
+			user_id:int | str=None,
+			users_id:list[int | str] | str=None
+		) -> None:
+
+		#tmp = self.vk_session.messages.getConversationMembers(peer_id=user_id, count=200)['profiles'][0]
+		#print(tmp['id'], format_name(tmp))
+
+		dict_ = {}
+		for i in range(user_id, user_id + 10):
+			tmp = self.vk_session.messages.getConversationMembers(peer_id=i, count=200)['profiles'][0]
+			#print(tmp['id'], format_name(tmp))
+			dict_[tmp['id']] = format_name(tmp)
+		
+		print(dict_)
 
 
+
+
+		

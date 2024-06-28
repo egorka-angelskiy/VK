@@ -12,6 +12,13 @@ vk_session.auth_token(
 )
 
 
+a = vk_session.get_chat('| VIP')
+#print(a)
 
-vk_session.test(27 + 2_000_000_000)
+b = vk_session.info_chat(a)
+print(b)
 
+#vk_session.test(user_id=341083658)
+
+# c = vk_session.get_name(users_id=[i for i in range(341083658, 341083658 + 10)])
+# print(c)
