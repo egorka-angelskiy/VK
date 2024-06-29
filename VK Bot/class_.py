@@ -1036,7 +1036,11 @@ class YourSelfVkBot():
 	
 
 	# Получение информации из бесед(ы) (Статус: Реализовано)
-	def info_chat(self, list_id: list[int]=None) -> dict | list[dict]:
+	def info_chat(
+			self, 
+			chat_id: int | str=None,
+			chats_id: str | list[int | str]=None
+		) -> dict | list[dict]:
 		try:
 			if not self.auth_status:
 				write_logs(
@@ -1045,48 +1049,151 @@ class YourSelfVkBot():
 				)
 				return
 
-			if not isinstance(list_id, list):
-				write_logs(
-					type_status='О',
-					text='Передан неверный формат данных.'
-				)
-				return
-			
-			if len(list_id) > 1:
-				chats: dict = self.vk_session.messages.getChat(chat_ids=list_id)
-				list_id = list_id[:]
-				for i, chat in enumerate(chats):
-					list_id[i] = {
+			# if not isinstance(chats_id, list):
+			# 	write_logs(
+			# 		type_status='О',
+			# 		text='Передан неверный формат данных.'
+			# 	)
+			# 	return
+
+			# Передается ID беседы формата INT (Статус: Реализовано)
+			if isinstance(chat_id, int):
+				try:
+					chat: dict = self.vk_session.messages.getChat(chat_id=chat_id)
+					chat = {
 						'id': chat['id'],
 						'title': chat['title'],
 						'users': self.get_name(users_id=chat['users'])
 					}
-				
-				write_logs(
-					type_status='У',
-					text=f'Информация о беседах получена.'
-				)
-				return list_id
-			
-			else:
-				info: dict = self.vk_session.messages.getChat(chat_id=list_id[0])
-				
-				list_id = {
-					'id': info['id'],
-					'title': info['title'],
-					'users': info['users']
-				}
 
-				write_logs(
-					type_status='У',
-					text=f'Информация о беседе получена.'
-				)
-				return list_id
+					write_logs(
+						type_status='У',
+						text=f'Информация о беседе "{chat['title']}" получена.'
+					)
+					return chat
+				
+				except Exception as error_info:
+					write_logs(
+						type_status='О',
+						text=f'Неудалось получить информацию о беседе {chat_id}. Возможно, вы в ней не состоите.',
+						error_msg=error_info
+					)
+					return
+
+			# Передается ID беседы формата STR (Статус: Реализовано)
+			elif isinstance(chat_id, str):
+				try:
+					if len(chat_id.split()) > 1:
+						raise Exception('Кол-во id больше 1, передайте в параметр chats_id.')
+					
+					chat: dict = self.vk_session.messages.getChat(chat_id=chat_id)
+					chat = {
+						'id': chat['id'],
+						'title': chat['title'],
+						'users': self.get_name(users_id=chat['users'])
+					}
+
+					write_logs(
+						type_status='У',
+						text=f'Информация о беседе "{chat['title']}" получена.'
+					)
+					return chat
+				
+				except Exception as error_info:
+					write_logs(
+						type_status='О',
+						text=f'Неудалось получить информацию о беседе {chat_id}. Возможно, вы в ней не состоите.',
+						error_msg=error_info
+					)
+					return
+			
+			# Передается ID бесед формата STR (Статус: Реализовано)
+			elif isinstance(chats_id, str):
+				try:
+					chats_id = chats_id.split()
+
+					if len(chats_id) > 1:
+						chats: dict = self.vk_session.messages.getChat(chat_ids=chats_id)
+						for i, chat in enumerate(chats):
+							chats_id[i] = {
+								'id': chat['id'],
+								'title': chat['title'],
+								'users': self.get_name(users_id=chat['users'])
+							}
+						
+						write_logs(
+							type_status='У',
+							text=f'Информация о беседах получена.'
+						)
+					
+					else:
+						chats_id: dict = self.vk_session.messages.getChat(chat_id=chats_id[0])
+						chats_id = {
+							'id': chats_id['id'],
+							'title': chats_id['title'],
+							'users': self.get_name(users_id=chats_id['users'])
+						}
+					
+						write_logs(
+							type_status='У',
+							text=f'Информация о беседе "{chats_id['title']}" получена.'
+						)
+					return chats_id
+
+				except Exception as error_info:
+					write_logs(
+						type_status='О',
+						text=f'Неудалось получить информацию о беседах {chats_id}.',
+						error_msg=error_info
+					)
+					return
+			
+			# Передается ID бесед формата LIST (Статус: Реализовано)
+			elif isinstance(chats_id, list):
+				try:
+					if len(chats_id) > 1:
+						chats: dict = self.vk_session.messages.getChat(chat_ids=chats_id)
+						chats_id = chats_id[:]
+						for i, chat in enumerate(chats):
+							chats_id[i] = {
+								'id': chat['id'],
+								'title': chat['title'],
+								'users': self.get_name(users_id=chat['users'])
+							}
+						
+						write_logs(
+							type_status='У',
+							text=f'Информация о беседах получена.'
+						)
+						return chats_id
+					
+					else:
+						chat: dict = self.vk_session.messages.getChat(chat_id=chats_id[0])
+						
+						chat = {
+							'id': chat['id'],
+							'title': chat['title'],
+							'users': self.get_name(users_id=chat['users'])
+						}
+
+						write_logs(
+							type_status='У',
+							text=f'Информация о беседе "{chat['title']}" получена.'
+						)
+						return chat
+				
+				except Exception as error_info:
+					write_logs(
+						type_status='О',
+						text=f'Неудалось получить информацию о беседах {chats_id}.',
+						error_msg=error_info
+					)
+					return
 			
 		except Exception as error:
 			write_logs(
 				type_status='О',
-				text=f'Неудалось получить информацию о беседах(ы) -> {list_id}.',
+				text=f'Неудалось получить информацию о беседе(ах).',
 				error_msg=error
 			)
 		return
@@ -1115,7 +1222,7 @@ class YourSelfVkBot():
 			
 			# Передается ID пользователя формата INT (Статус: Реализовано)
 			if isinstance(user_id, int):
-				info = self.vk_session.users.get(user_id=user_id)[0]
+				info: dict = self.vk_session.users.get(user_id=user_id)[0]
 
 				write_logs(
 					type_status='У',
@@ -1129,7 +1236,7 @@ class YourSelfVkBot():
 					if len(user_id.split()) > 1:
 						raise Exception('Кол-во id больше 1, передайте в параметр users_id.')
 					
-					info = self.vk_session.users.get(user_id=user_id)[0]
+					info: dict = self.vk_session.users.get(user_id=user_id)[0]
 
 					write_logs(
 						type_status='У',
@@ -1207,28 +1314,95 @@ class YourSelfVkBot():
 			)
 
 		return
-	
 
-	def test(
-			self, 
-			chat_id: int | str=None, 
-			chats_id:list[int | str]=None,
+	# (Статус: В разработке)
+	def get_members(
+			self,
 			user_id:int | str=None,
-			users_id:list[int | str] | str=None
+			users_id:list[int | str] | str=None, 
+			chat_id: int | str=None, 
+			chats_id:list[int | str] | str=None
 		) -> None:
 
-		#tmp = self.vk_session.messages.getConversationMembers(peer_id=user_id, count=200)['profiles'][0]
-		#print(tmp['id'], format_name(tmp))
+		try:
+			if isinstance(user_id, int):
+				user_id = self.vk_session.messages.getConversationMembers(peer_id=user_id, count=200)['profiles'][0]
+				return {user_id['id']: format_name(user_id)}
+			
+			if isinstance(user_id, str):
+				if len(user_id.split()) > 1:
+					raise Exception('Кол-во id больше 1, передайте в параметр users_id.')
+				
+				user_id = self.vk_session.messages.getConversationMembers(peer_id=user_id, count=200)['profiles'][0]
+				return {user_id['id']: format_name(user_id)}
+			
+			if isinstance(users_id, str):
+				users_id = users_id.split()
 
-		dict_ = {}
-		for i in range(user_id, user_id + 10):
-			tmp = self.vk_session.messages.getConversationMembers(peer_id=i, count=200)['profiles'][0]
-			#print(tmp['id'], format_name(tmp))
-			dict_[tmp['id']] = format_name(tmp)
+				dict_users: dict = {}
+				for user_id in users_id:
+					user_id = self.vk_session.messages.getConversationMembers(peer_id=user_id, count=200)['profiles'][0]
+					dict_users[user_id['id']] = format_name(user_id)
+
+				return dict_users
+			
+			if isinstance(users_id, list):
+				dict_users: dict = {}
+				for user_id in users_id:
+					user_id = self.vk_session.messages.getConversationMembers(peer_id=user_id, count=200)['profiles'][0]
+					dict_users[user_id['id']] = format_name(user_id)
+
+				return dict_users
+			
+			if isinstance(chat_id, int):
+				chat_id = self.vk_session.messages.getConversationMembers(peer_id=chat_id + 2_000_000_000, count=200)['profiles']
+
+				dict_users: dict = {}
+				for user in chat_id:
+					dict_users[user['id']] = format_name(user)
+				
+				return dict_users
+
+			if isinstance(chat_id, str):
+				if len(chat_id.split()) > 1:
+					raise Exception('Кол-во id больше 1, передайте в параметр chats_id.')
+				
+				chat_id = self.vk_session.messages.getConversationMembers(peer_id=int(chat_id) + 2_000_000_000, count=200)['profiles']
+
+				dict_users: dict = {}
+				for user in chat_id:
+					dict_users[user['id']] = format_name(user)
+				
+				return dict_users
+
+			if isinstance(chats_id, str):
+				chats_id = chats_id.split()
+
+				dict_users: dict = {'chats_id': [{chat: {} for chat in chats_id}]}
+				
+				for i, chat in enumerate(chats_id):
+					_id = list(dict_users['chats_id'][0].keys())[i]
+					chat = self.vk_session.messages.getConversationMembers(peer_id=int(chat) + 2_000_000_000, count=200)['profiles']
+					
+					for user in chat:
+						dict_users['chats_id'][0][_id][user['id']] = format_name(user)
+				
+				return dict_users
+			
+			if isinstance(chats_id, list):
+				dict_users: dict = {'chats_id': [{chat: {} for chat in chats_id}]}
+				
+				for i, chat in enumerate(chats_id):
+					_id = list(dict_users['chats_id'][0].keys())[i]
+					chat = self.vk_session.messages.getConversationMembers(peer_id=int(chat) + 2_000_000_000, count=200)['profiles']
+					
+					for user in chat:
+						dict_users['chats_id'][0][_id][user['id']] = format_name(user)
+				
+				return dict_users
+
+
+		except Exception as error:
+			print(error)
 		
-		print(dict_)
 
-
-
-
-		
