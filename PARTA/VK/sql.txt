@@ -1,0 +1,78 @@
+create table if not exists students (
+	id int primary key not null unique check (name similar to '[\d]'),
+	name text not null,
+	group_name text not null
+);
+
+
+create table if not exists calls (
+	id int not null unique references students(id),
+	call_one text not null default 'Не проведен',
+	call_two text not null default 'Не проведен',
+	link_one text not null default 'Отсутствует',
+	link_two text not null default 'Отсутствует'
+);
+
+
+create table if not exists excel_table (
+	id int not null unique references students(id),
+	call_one boolean not null default false,
+	call_two boolean not null default false
+);
+
+
+create table if not exists time_call (
+	id int not null references students(id),
+	date date not null,
+	time time not null
+);
+
+
+
+
+insert into students values ('1', '1', '1');
+insert into time_call values ('1', '04.08', '12:00') where (select count(*) from time_call where id='1') < 2;
+insert into time_call values ('1', '04.08', '13:00');
+
+
+delete from time_call;
+delete from excel_table;
+delete from calls;
+delete from students;
+
+
+drop table time_call;
+drop table excel_table;
+drop table calls;
+drop table students;
+
+substring(col, start, stop)
+
+insert into 
+time_call(id, data, time)
+select 
+	'1', '04.09', '14:00'
+		
+where not exists(
+	select 
+		id, data, time 
+	
+	from 
+		time_call 
+	
+	where
+		(id, data, time)=('1', '04.09', '14:00')
+)
+and
+(
+	select
+		count(*)
+	
+	from 
+		time_call
+	
+	where
+		(id, substring(data, 4, 5))=('1', '09')
+) < 2
+;
+
