@@ -1,5 +1,4 @@
 from library import *
-from config import *
 
 def write_logs(type_status: str=None, text: str=None, error_msg: any=None) -> None:
 	file = open('logs.txt', mode='+a')
@@ -75,3 +74,108 @@ def format_name(data: dict) -> str:
 	last_name = data['last_name']
 	full_name = f'{first_name} {last_name}'
 	return full_name
+
+
+def view_process(do, rerun=None):
+	text = f'{dict_process[do][0]} данных. Ожидайте.'
+	progress = sl.progress(0, text=text)
+
+	for process in range(100):
+		time.sleep(.05)
+		progress.progress(process + 1, text=text)
+	
+	time.sleep(1)
+	progress.empty()
+	success = sl.success(f'Данные успешно {dict_process[do][1]} ✔️')
+	time.sleep(3)
+	success.empty()
+
+	if rerun:
+		sl.rerun()
+
+
+def buttoms(db, table_name, table):
+	if table_name not in list_db[3:]:
+		return
+	
+	if not table.empty:
+		col1, col2 = sl.columns([1, 18]) # wide
+		# col1, col2 = sl.columns([1, 9]) # centered
+		with col1:
+			save = sl.button('Save')
+				
+		with col2:
+			clear = sl.button('Clear')
+	
+	else:
+		clear = sl.button('Clear')
+		save = None
+	
+	if save:
+		view_process('save')
+		db.update_data(table, table_name)
+		sl.rerun()
+	
+	if clear:
+		db.clear_data(table_name)
+		view_process('clear', rerun=True)
+
+@sl.dialog('Вы уверены, что хотите удалить абсолютно все данные?', width='large')
+def delete_all(db):
+	col1, col2 = sl.columns([4, 17])
+	with col1:
+		accept = sl.button('Подтвердить')
+	
+	with col2:
+		refuse = sl.button('Вернуться назад')
+	
+	if accept:
+		db.delete_all()
+		view_process('del')
+	
+	if refuse:
+		sl.rerun()
+
+
+@sl.dialog('Вы уверены, что выбрали всю информацию для добавления/обновления?', width='large')
+def insert_update_all(db, vk_):
+	groups = sl.multiselect(
+		'Беседы VK',
+		vk_.get_chat(),
+		placeholder='Выберите беседу(ы)...'
+	)
+
+	if groups:
+		sl.write(f'Были выбраны следующие данные: ')
+		for group in groups:
+			sl.write(group)
+
+	col1, col2 = sl.columns([4, 17])
+	with col1:
+		accept = sl.button('Подтвердить')
+	
+	with col2:
+		refuse = sl.button('Вернуться назад')
+	
+	if accept:
+		db.check_users(vk_, groups)
+		view_process('get')
+	
+	if refuse:
+		sl.rerun()
+
+def _table_name(obj):
+	return list_db[1:][obj._provided_cursor.parent_path[1]]
+
+
+def parse_time_video_rutube(url):
+	page = requests.get(url)
+	soup = BeautifulSoup(page.text, "html.parser")
+	for i in soup.find_all('meta'):
+		_time = str(i).split('=')[1].split('длительностью')
+		if len(_time) <= 1:
+			continue
+		
+		return _time[1].split(',')[0][:6]
+		hour, minute = _time[1].split(',')[0][:6].split(':')
+		return int(minute) + 60 * int(hour)

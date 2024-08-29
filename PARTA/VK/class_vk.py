@@ -969,7 +969,7 @@ class YourSelfVkBot():
 	
 
 	# Получение ID бесед(ы) (Статус: Реализовано)
-	def get_chat(self, title_chat: str=None) -> list[int]:
+	def get_chat(self, title_chat: str | list[str]=None) -> list[int]:
 		try:
 			if not self.auth_status:
 				write_logs(
@@ -978,7 +978,7 @@ class YourSelfVkBot():
 				)
 				return
 
-			if not (isinstance(title_chat, str) or isinstance(title_chat, type(None))):
+			if not (isinstance(title_chat, str) or isinstance(title_chat, type(None)) or isinstance(title_chat, list)):
 				write_logs(
 					type_status='О',
 					text='Передан неверный формат данных.'
@@ -987,6 +987,7 @@ class YourSelfVkBot():
 
 			if isinstance(title_chat, type(None)):
 				chats: dict = self.vk_session.messages.getConversations(count=200)['items']
+				dict_id: dict[str: int] = dict()
 				list_id: list[int] = []
 				for chat in chats:
 					type_message: str = chat['conversation']['peer']['type']
@@ -995,16 +996,26 @@ class YourSelfVkBot():
 						continue
 					
 					_id: int = chat['conversation']['peer']['id'] - 2_000_000_000
+					title: str = chat['conversation']['chat_settings']['title']
+					dict_id[title] = _id
 					list_id += [_id]
 				
 				write_logs(
 					type_status='У',
 					text=f'Список существующих ID бесед получены.'
 				)
+				return dict_id
+			
+			if isinstance(title_chat, list):
+				list_id: list[int] = []
+				for title in title_chat:
+					list_id += [self.get_chat(title)[0]]
+				
 				return list_id
 			
 			chats: dict = self.vk_session.messages.getConversations(count=200)['items']
 			list_id: list[int] = []
+			dict_id: dict[str: int] = dict()
 			for chat in chats:
 				type_message: str = chat['conversation']['peer']['type']
 
@@ -1016,6 +1027,8 @@ class YourSelfVkBot():
 				
 				if title:
 					_id: int = chat['conversation']['peer']['id'] - 2_000_000_000
+					title: str = chat['conversation']['chat_settings']['title']
+					dict_id[title] = _id
 					list_id += [_id]
 			
 			write_logs(
@@ -1072,7 +1085,7 @@ class YourSelfVkBot():
 						type_status='У',
 						text=f'Информация о беседе "{chat['title']}" получена.'
 					)
-					return chat
+					return [chat]
 				
 				except Exception as error_info:
 					write_logs(
@@ -1099,7 +1112,7 @@ class YourSelfVkBot():
 						type_status='У',
 						text=f'Информация о беседе "{chat['title']}" получена.'
 					)
-					return chat
+					return [chat]
 				
 				except Exception as error_info:
 					write_logs(
@@ -1140,7 +1153,7 @@ class YourSelfVkBot():
 							type_status='У',
 							text=f'Информация о беседе "{chats_id['title']}" получена.'
 						)
-					return chats_id
+					return [chats_id]
 
 				except Exception as error_info:
 					write_logs(
@@ -1182,7 +1195,7 @@ class YourSelfVkBot():
 							type_status='У',
 							text=f'Информация о беседе "{chat['title']}" получена.'
 						)
-						return chat
+						return [chat]
 				
 				except Exception as error_info:
 					write_logs(
@@ -1386,6 +1399,9 @@ class YourSelfVkBot():
 
 				dict_users: dict = {}
 				for user in chat:
+					if user['id'] in [661495212, 748529295, 755026245, 781809174, 799132274, 558109767]:
+						continue
+
 					dict_users[user['id']] = format_name(user)
 				
 				write_logs(
@@ -1458,3 +1474,5 @@ class YourSelfVkBot():
 		return
 		
 
+	def del_members(self, chat=None, chats=None):
+		...

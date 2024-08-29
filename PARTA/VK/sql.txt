@@ -1,5 +1,10 @@
+\l, SELECT datname FROM pg_database; - просмотр созданых DB
+\d , SELECT tablename FROM pg_tables where schemaname='public'; - просмотр в DB созданные таблицы
+
+
+
 create table if not exists students (
-	id int primary key not null unique check (name similar to '[\d]'),
+	id int primary key not null unique,
 	name text not null,
 	group_name text not null
 );
@@ -10,7 +15,9 @@ create table if not exists calls (
 	call_one text not null default 'Не проведен',
 	call_two text not null default 'Не проведен',
 	link_one text not null default 'Отсутствует',
-	link_two text not null default 'Отсутствует'
+	time_one time,
+	link_two text not null default 'Отсутствует',
+	time_two time
 );
 
 
@@ -30,11 +37,6 @@ create table if not exists time_call (
 
 
 
-insert into students values ('1', '1', '1');
-insert into time_call values ('1', '04.08', '12:00') where (select count(*) from time_call where id='1') < 2;
-insert into time_call values ('1', '04.08', '13:00');
-
-
 delete from time_call;
 delete from excel_table;
 delete from calls;
@@ -51,7 +53,7 @@ substring(col, start, stop)
 insert into 
 time_call(id, data, time)
 select 
-	'1', '04.09', '14:00'
+	'', '', ''
 		
 where not exists(
 	select 
@@ -61,7 +63,7 @@ where not exists(
 		time_call 
 	
 	where
-		(id, data, time)=('1', '04.09', '14:00')
+		(id, data, time)=('', '', '')
 )
 and
 (
@@ -72,7 +74,164 @@ and
 		time_call
 	
 	where
-		(id, substring(data, 4, 5))=('1', '09')
+		(id, extract(month from date))=('', '')
 ) < 2
 ;
 
+
+select substring(date, 4, 5) from time_call;
+
+
+
+
+delete from time_call
+where
+exists (
+select count(*)
+from time_call
+where id='1'
+)
+and
+id='1'
+;
+
+
+select id,
+case
+	when exists (
+		select *
+		from time_call
+		where 
+			id='107311117' and date='18.08.2024'
+	)
+
+	then
+		(update time_call
+		set
+			time='15:00'
+		where
+			id='107311117' and date='18.08.2024')
+	
+	else
+		(insert into time_call values ('107311117', '18.08.2024', '10:00'))
+	
+	end as tmp
+
+from time_call
+;
+
+
+
+
+
+
+do $$
+begin
+	if exists (
+		select *
+		from time_call
+		where 
+			id='' and date=''
+	) then
+			update time_call
+			set
+			time=''
+			where
+				id='' and date='';
+	else
+		insert into time_call 
+		values (
+			'', 
+			'', 
+			''
+		);
+	end if;
+end $$;
+
+
+
+do $$ 
+begin 
+	if exists ( select * from time_call where id='107311117' and date='2024-08-19' ) 
+		then 
+			update time_call set time='13:08:39' where id='107311117' and date='2024-08-19'; 
+	
+	else 
+		insert into 
+		time_call(id, date, time) 
+		select '107311117', '2024-08-21', '13:08:39'
+		where not exists(
+			select
+				id, date, time 
+
+			from 
+				time_call 
+
+			where
+				(id, date, time)=('107311117', '2024-08-21', '13:08:39')
+		)
+		and
+		(
+			select
+				count(*)
+
+			from 
+				time_call
+
+			where
+				(id, extract(month from date))=('107311117', '8')
+		) < 2
+		;
+	end if;
+end $$;
+
+
+
+
+select excel.id, t.group_name, t.link_one, t.link_two
+from excel_table as excel
+join (
+	select calls.id, students.group_name, calls.link_one, calls.link_two
+	from calls
+	join students
+	on calls.id=students.id
+	where calls.call_one='Проведен' or calls.link_two='Проведен'
+	) as t
+on excel.id=t.id
+;
+
+
+select excel.id, t.group_name, t.link_one, excel.call_one
+from excel_table as excel
+join (
+	select calls.id, students.group_name, calls.link_one
+	from calls
+	join students
+	on calls.id=students.id
+	where calls.link_one!='Отсутствует'
+	) as t
+on excel.id=t.id
+;
+
+select excel.id, t.group_name, t.link_two, excel.call_two
+from excel_table as excel
+join (
+	select calls.id, students.group_name, calls.link_two
+	from calls
+	join students
+	on calls.id=students.id
+	where calls.link_two!='Отсутствует'
+	) as t
+on excel.id=t.id
+where excel.call_two=false
+;
+
+
+
+do $$ 
+begin 
+	if not exists (select * from excel_table where id='{user_id}') 
+		then 
+			insert into excel_table values ('{user_id}');
+	end if;
+end $$;
